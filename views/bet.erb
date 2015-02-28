@@ -1,0 +1,8 @@
+<h3> Make a bet for this round.</h3>
+<p>But be careful, because money disappears fast.  <%= session[:player_name] %> only has $<%= session[:player_money].to_i %>.</p>
+
+<form action = "/bet" method = "POST">
+  <input type = "text" name ='bet_amount' />
+  <br/>
+  <input type = "submit" value="Make a bet" class = "btn" />
+</form>
