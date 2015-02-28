@@ -5,7 +5,7 @@ set :sessions, true
 
 BLACKJACK_AMOUNT = 21
 DEALER_MIN_HIT = 17
-INITIAL_POT_AMOUNT = 500
+INITIAL_POT_AMOUNT = 500.00
 
 helpers do
   def calculate_total(cards)
@@ -105,7 +105,7 @@ post '/bet' do
   if params[:bet_amount].nil? || params[:bet_amount].to_i == 0
     @error = "Must make a bet."
     halt erb(:bet)
-  elsif params[:bet_amount].to_i > session[:player_money]
+  elsif params[:bet_amount].to_i > session[:player_money].to_i
     @error = "Bet amount cannot be greater than total amount of player money."
     halt erb(:bet)
   else
