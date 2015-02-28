@@ -1,11 +1,12 @@
 require 'rubygems'
 require 'sinatra'
+require 'pry'
 
 set :sessions, true
 
 BLACKJACK_AMOUNT = 21
 DEALER_MIN_HIT = 17
-INITIAL_POT_AMOUNT = 500.00
+INITIAL_POT_AMOUNT = 500
 
 helpers do
   def calculate_total(cards)
