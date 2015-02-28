@@ -117,7 +117,7 @@ end
 get '/game' do
   session[:turn] = session[:player_name]
   suits = ['D', 'H', 'S', 'C']
-  cards = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+  cards = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
   session[:deck] = suits.product(cards).shuffle!
   session[:player_cards] = []
   session[:dealer_cards] = []
@@ -127,6 +127,16 @@ get '/game' do
   session[:dealer_cards] << session[:deck].pop
   session[:player_total] = calculate_total(session[:player_cards])
   session[:dealer_total] = calculate_total(session[:dealer_cards])
+  if session[:player_total] == BLACKJACK_AMOUNT && session[:dealer_total]!= BLACKJACK_AMOUNT
+    winner!("Congrats on hitting Blackjack - everyone gets lucky once in awhile.  You won $#{session[:player_bet]}.  I bet you can't do that again.")
+    session[:turn] = 'Dealer'
+  elsif session[:player_total] == BLACKJACK_AMOUNT && session[:dealer_total] == BLACKJACK_AMOUNT
+    tie!("Wow - we both got Blackjack!  That is amazing.")
+    session[:turn] = 'Dealer'
+  elsif session[:player_total] != BLACKJACK_AMOUNT && session[:dealer_total] == BLACKJACK_AMOUNT
+    loser!("Dealer hits blackjack.  You are bad at this.  You lose $#{session[:player_bet]}.")
+    session[:turn] = 'Dealer'
+  end
   erb :game
 end
 
@@ -134,9 +144,9 @@ post '/hit' do
   session[:player_cards] << session[:deck].pop
   session[:player_total] = calculate_total(session[:player_cards])
   if session[:player_total] == BLACKJACK_AMOUNT
-    winner!("#{session[:player_name]} hit Blackjack.  Everyone gets lucky once in awhile.  You won #{player_bet}, bringing your total money to #{player_money}.  I bet you can't do that again.")
+    winner!("Congrats on hitting Blackjack - everyone gets lucky once in awhile.  You won $#{session[:player_bet]}.  I bet you can't do that again.")
   elsif session[:player_total] > BLACKJACK_AMOUNT
-    loser!("#{session[:player_name]} Busted.  I don't even feel challenged.  You lose #{player_bet}, bringing your total money down to a tiny #{player_money}.")
+    loser!("Busting is pathetic - I don't even feel challenged.  You lose $#{session[:player_bet]}.")
   end
   erb :game, layout: false
 end
@@ -152,9 +162,9 @@ get '/dealer' do
   @show_hit_or_stay_buttons = false
   dealer_total = calculate_total(session[:dealer_cards])
   if dealer_total == BLACKJACK_AMOUNT
-    loser!("Dealer hits blackjack.  You are bad at this.  You lose #{player_bet}, bringing your total money down to a tiny #{player_money}.")
+    loser!("Dealer hits blackjack.  You are bad at this.  You lose $#{session[:player_bet]}.")
   elsif dealer_total > BLACKJACK_AMOUNT
-    winner!("Dealer busted at #{dealer_total}.  You got lucky and won #{player_bet}, bringing your total money to #{player_money}.  I bet you can't do that again.")
+    winner!("Dealer busted at #{dealer_total}.  You got lucky and won $#{session[:player_bet]}.  I bet you can't do that again.")
   elsif dealer_total >= DEALER_MIN_HIT
     redirect '/compare'
   else
@@ -173,11 +183,11 @@ get '/compare' do
   player_total = calculate_total(session[:player_cards])
   dealer_total = calculate_total(session[:dealer_cards])
   if player_total < dealer_total
-    loser!("#{session[:player_name]} stayed at #{player_total}, and the dealer stayed at #{dealer_total}.  Are you smart enough to know which number is bigger?  Shocking no one, you lose #{player_bet}, bringing your total money to a pathetic #{player_money}.")
+    loser!("#{session[:player_name]} stayed at #{player_total}, and the dealer stayed at #{dealer_total}.  Are you smart enough to know which number is bigger?  Shocking no one, you lose $#{session[:player_bet]}.")
   elsif player_total > dealer_total
-    winner!("#{session[:player_name]} stayed at #{player_total}, and the dealer stayed at #{dealer_total}.  You got lucky this time and won #{player_bet}, bringing your total money to #{player_money}.")
+    winner!("#{session[:player_name]} stayed at #{player_total}, and the dealer stayed at #{dealer_total}.  You got lucky this time and won $#{session[:player_bet]}.")
   else
-    tie!("Both #{session[:player_name]} and the dealer stayed at #{player_total}.  While you didn't lose any money, you didn't win any either.  Your total money is still #{player_money}.")
+    tie!("Both #{session[:player_name]} and the dealer stayed at #{player_total}.  While you didn't lose any money, you didn't win any either.")
   end
   erb :game, layout: false
 end
